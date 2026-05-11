@@ -1,0 +1,131 @@
+services:
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-helloworld}
+      MYSQL_DATABASE: ${DB_NAME:-hellion}
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./sql/hellion.sql:/docker-entrypoint-initdb.d/01-hellion.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "-p${DB_ROOT_PASSWORD:-helloworld}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  isc:
+    build:
+      context: .
+      args:
+        PROJECT: Hellion.ISC
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      Isc__Ip: "0.0.0.0"
+      Isc__Port: "15000"
+      Isc__Password: ${ISC_PASSWORD:-4fded1464736e77865df232cbcb4cd19}
+    ports:
+      - "15000:15000"
+
+  login:
+    build:
+      context: .
+      args:
+        PROJECT: Hellion.Login
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      isc:
+        condition: service_started
+    environment:
+      Login__Ip: "0.0.0.0"
+      Login__Port: "23000"
+      Login__Isc__Ip: "isc"
+      Login__Isc__Port: "15000"
+      Login__Isc__Password: ${ISC_PASSWORD:-4fded1464736e77865df232cbcb4cd19}
+      Database__Ip: "db"
+      Database__User: "root"
+      Database__Password: ${DB_ROOT_PASSWORD:-helloworld}
+      Database__DatabaseName: ${DB_NAME:-hellion}
+    ports:
+      - "23000:23000"
+
+  cluster:
+    build:
+      context: .
+      args:
+        PROJECT: Hellion.Cluster
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      isc:
+        condition: service_started
+    environment:
+      Cluster__Ip: "0.0.0.0"
+      Cluster__Port: "28000"
+      Cluster__Isc__Ip: "isc"
+      Cluster__Isc__Port: "15000"
+      Cluster__Isc__Password: ${ISC_PASSWORD:-4fded1464736e77865df232cbcb4cd19}
+      Database__Ip: "db"
+      Database__User: "root"
+      Database__Password: ${DB_ROOT_PASSWORD:-helloworld}
+      Database__DatabaseName: ${DB_NAME:-hellion}
+    ports:
+      - "28000:28000"
+
+  world:
+    build:
+      context: .
+      args:
+        PROJECT: Hellion.World
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      isc:
+        condition: service_started
+    environment:
+      World__Ip: "0.0.0.0"
+      World__Port: "5400"
+      World__Isc__Ip: "isc"
+      World__Isc__Port: "15000"
+      World__Isc__Password: ${ISC_PASSWORD:-4fded1464736e77865df232cbcb4cd19}
+      Database__Ip: "db"
+      Database__User: "root"
+      Database__Password: ${DB_ROOT_PASSWORD:-helloworld}
+      Database__DatabaseName: ${DB_NAME:-hellion}
+    ports:
+      - "5400:5400"
+    volumes:
+      - ./data:/app/data:ro
+
+  web:
+    build:
+      context: .
+      args:
+        PROJECT: Hellion.Web
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_URLS: "http://+:8080"
+      Database__Ip: "db"
+      Database__User: "root"
+      Database__Password: ${DB_ROOT_PASSWORD:-helloworld}
+      Database__DatabaseName: ${DB_NAME:-hellion}
+      Admin__DefaultUsername: ${ADMIN_USERNAME:-admin}
+      Admin__DefaultEmail: ${ADMIN_EMAIL:-admin@hellion.local}
+      Admin__DefaultPassword: ${ADMIN_PASSWORD:-ChangeMe!2026}
+    ports:
+      - "8080:8080"
+
+volumes:
+  db_data:

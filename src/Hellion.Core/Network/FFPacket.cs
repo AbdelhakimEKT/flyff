@@ -11,6 +11,14 @@ namespace Hellion.Core.Network
         private uint header;
         private short mergedPacketCount;
 
+        static FFPacket()
+        {
+            // FFPacket strings are CP1252; the provider must be registered
+            // before any encoding lookup. Log's static constructor also does
+            // this, but FFPacket can be used without Log.
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+        }
+
         /// <summary>
         /// Gets the FFPacket buffer.
         /// </summary>

@@ -1,0 +1,50 @@
+@page
+@model Hellion.Web.Pages.Admin.AccountsModel
+@{
+    ViewData["Title"] = "Accounts";
+}
+
+<h2>Accounts</h2>
+
+@if (!string.IsNullOrEmpty(Model.StatusMessage))
+{
+    <p class="muted">@Model.StatusMessage</p>
+}
+
+<table>
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Username</th>
+            <th>Authority</th>
+            <th>Verified</th>
+            <th>Created</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var account in Model.Accounts)
+        {
+            <tr>
+                <td>@account.Id</td>
+                <td>@account.Username</td>
+                <td>@account.Authority</td>
+                <td>@(account.Verification ? "✓" : "—")</td>
+                <td>@account.CreatedAt.ToString("u")</td>
+                <td>
+                    <form method="post" style="display:inline">
+                        <input type="hidden" name="id" value="@account.Id" />
+                        @if (account.Authority > 0)
+                        {
+                            <button type="submit" asp-page-handler="Ban" class="danger">Ban</button>
+                        }
+                        else
+                        {
+                            <button type="submit" asp-page-handler="Unban">Unban</button>
+                        }
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
