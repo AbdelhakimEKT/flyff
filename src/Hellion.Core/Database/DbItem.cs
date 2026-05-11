@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Hellion.Core.Database
 {
     [Table("items")]
-    public class DbItem
+    public class DbItem : BaseEntity
     {
+        [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Column("id")]
         public int Id { get; set; }
@@ -25,6 +23,6 @@ namespace Hellion.Core.Database
         [Column("itemSlot")]
         public int ItemSlot { get; set; }
 
-        public DbCharacter Character { get; set; }
+        public DbCharacter Character { get; set; } = null!;
     }
 }

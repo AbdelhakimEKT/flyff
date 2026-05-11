@@ -1,0 +1,37 @@
+@page
+@model Hellion.Web.Pages.Admin.CharactersModel
+@{
+    ViewData["Title"] = "Characters";
+}
+
+<h2>Characters</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>Account</th>
+            <th>Level</th>
+            <th>Class</th>
+            <th>Map</th>
+            <th>Position</th>
+            <th>Gold</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var c in Model.Characters)
+        {
+            <tr>
+                <td>@c.Id</td>
+                <td>@c.Name</td>
+                <td>@c.AccountId</td>
+                <td>@c.Level</td>
+                <td>@c.ClassId</td>
+                <td>@c.MapId</td>
+                <td>@($"{c.PosX:F1}, {c.PosY:F1}, {c.PosZ:F1}")</td>
+                <td>@c.Gold</td>
+            </tr>
+        }
+    </tbody>
+</table>

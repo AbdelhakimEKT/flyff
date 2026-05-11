@@ -1,15 +1,10 @@
-﻿using Hellion.Core.Database;
-using Hellion.Core.IO;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Sockets;
-using System.Threading;
-using System.Threading.Tasks;
 using Hellion.Core;
 using Hellion.Core.Data.Headers;
+using Hellion.Core.Database;
+using Hellion.Core.IO;
 using Hellion.Core.Network;
 using Hellion.World.Structures;
+using System.Net.Sockets;
 
 namespace Hellion.World
 {
@@ -17,40 +12,30 @@ namespace Hellion.World
     {
         private uint sessionId;
 
-        private DbUser currentUser;
+        private DbUser? currentUser;
 
         /// <summary>
         /// Gets or sets the current player.
         /// </summary>
-        public Player Player { get; private set; }
+        public Player? Player { get; private set; }
 
         /// <summary>
         /// Gets or sets the WorldServer reference.
         /// </summary>
-        public WorldServer Server { get; set; }
+        public WorldServer Server { get; set; } = null!;
 
-        /// <summary>
-        /// Creates a new WorldClient instance.
-        /// </summary>
         public WorldClient()
             : base()
         {
             this.sessionId = (uint)Global.GenerateRandomNumber();
         }
 
-        /// <summary>
-        /// Creates a new WorldClient instance.
-        /// </summary>
-        /// <param name="socket">Client socket</param>
         public WorldClient(Socket socket)
             : base(socket)
         {
             this.sessionId = (uint)Global.GenerateRandomNumber();
         }
 
-        /// <summary>
-        /// Send hi to the client.
-        /// </summary>
         public override void Greetings()
         {
             var packet = new FFPacket();
@@ -62,23 +47,34 @@ namespace Hellion.World
         }
 
         /// <summary>
-        /// Handle incoming packets.
+        /// Called by <c>JoinHandler</c> once the account + character have been
+        /// loaded asynchronously; finalises the in-world state, registers the
+        /// player in the spatial index, and triggers the spawn packet.
         /// </summary>
-        /// <param name="packet">Incoming packet</param>
+        internal void CompleteJoin(DbUser account, DbCharacter character)
+        {
+            this.currentUser = account;
+            this.Player = new Player(character);
+            this.Server.Maps.Get(this.Player.MapId).Track(this, oldPosition: null, this.Player.Position);
+            this.SendPlayerSpawn();
+        }
+
         public override void HandleMessage(NetPacketBase packet)
         {
             packet.Position = 17;
 
-            var packetHeaderNumber = packet.Read<uint>();
+            uint packetHeaderNumber = packet.Read<uint>();
             var packetHeader = (WorldHeaders.Incoming)packetHeaderNumber;
 
             Log.Debug("Recieve packet: {0}", packetHeader);
 
-            switch (packetHeader)
+            if (this.Server.PacketRouter.TryRoute(packetHeaderNumber, packet, this, out var task))
             {
-                case WorldHeaders.Incoming.Join: this.OnJoin(packet); break;
-
-                default: FFPacket.UnknowPacket<WorldHeaders.Incoming>(packetHeaderNumber, 8); break;
+                task.GetAwaiter().GetResult();
+            }
+            else
+            {
+                FFPacket.UnknowPacket<WorldHeaders.Incoming>(packetHeaderNumber, 8);
             }
 
             base.HandleMessage(packet);

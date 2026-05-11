@@ -39,7 +39,7 @@ namespace Hellion.Core.Database
                     throw new InvalidOperationException("Database service has not been initialized. Please call the DatabaseService.InitializeDatabase method.");
 
                 if (characterRepository == null)
-                    characterRepository = new CharacterRepository(dbContext);
+                    characterRepository = new LegacyCharacterRepository(dbContext);
 
                 return characterRepository;
             }
@@ -56,7 +56,7 @@ namespace Hellion.Core.Database
                     throw new InvalidOperationException("Database service has not been initialized. Please call the DatabaseService.InitializeDatabase method.");
 
                 if (itemRepository == null)
-                    itemRepository = new ItemRepository(dbContext);
+                    itemRepository = new LegacyItemRepository(dbContext);
 
                 return itemRepository;
             }

@@ -1,92 +1,31 @@
-﻿using Hellion.Core;
-using Hellion.Core.Configuration;
-using Hellion.Core.Data.Resources;
-using Hellion.Core.IO;
-using Hellion.World.Systems.Map;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+using Hellion.Core;
+using Hellion.Core.IO;
 
 namespace Hellion.World
 {
     public partial class WorldServer
     {
-        private Dictionary<string, int> defines = new Dictionary<string, int>();
-
         /// <summary>
-        /// Loads the world server data like resources, maps, quests, dialogs, etc...
+        /// Load the world server data (game resources: mobs, items, maps).
+        /// Missing files are tolerated so the server can boot without the
+        /// proprietary FlyFF client resources.
         /// </summary>
         private void LoadData()
         {
-            var startTime = DateTime.Now;
-            Log.Info("Loading world data...");
-            
-            this.LoadDefines();
-            this.LoadMaps();
-            this.Clear();
+            DateTime start = DateTime.Now;
+            Log.Info("Loading world data from '{0}'...", Global.DataPath);
 
-            Log.Done("World data loaded in {0}s", (DateTime.Now - startTime).TotalSeconds);
-        }
-
-        /// <summary>
-        /// Clear all unused resources.
-        /// </summary>
-        private void Clear()
-        {
-            this.defines.Clear();
-        }
-
-        /// <summary>
-        /// Load the flyff defines files.
-        /// </summary>
-        private void LoadDefines()
-        {
-            string[] defines = {
-                                    "define.h",
-                                    "defineAttribute.h",
-                                    "defineEvent.h",
-                                    "defineHonor.h",
-                                    "defineItem.h",
-                                    "defineItemkind.h",
-                                    "defineJob.h",
-                                    "defineNeuz.h",
-                                    "defineObj.h",
-                                    "defineSkill.h",
-                                    "defineSound.h",
-                                    "defineText.h",
-                                    "defineWorld.h"
-                                };
-
-            foreach (var defineFile in defines)
+            try
             {
-                var defineFileContent = new DefineFile(Path.Combine(Global.DataPath, "res", "data", defineFile));
-                defineFileContent.Parse();
-
-                foreach (var define in defineFileContent.Defines)
-                {
-                    if (!this.defines.ContainsKey(define.Key))
-                        this.defines.Add(define.Key, define.Value);
-                }
+                this.Resources.LoadAll(Global.DataPath);
             }
-        }
-
-        /// <summary>
-        /// Load the flyff maps specified in the configuration file.
-        /// </summary>
-        private void LoadMaps()
-        {
-            IEnumerable<MapConfiguration> maps = this.WorldConfiguration.Maps;
-
-            foreach (var map in maps)
+            catch (Exception ex)
             {
-                var newMap = new Map(map.Name);
-                newMap.Load();
-
-                // add map to MapInstance
+                Log.Error("Failed to load world data: {0}", ex.Message);
             }
+
+            Log.Done("World data loaded in {0:F2}s.", (DateTime.Now - start).TotalSeconds);
         }
     }
 }

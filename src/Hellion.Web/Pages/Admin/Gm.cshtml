@@ -1,0 +1,31 @@
+@page
+@model Hellion.Web.Pages.Admin.GmModel
+@{
+    ViewData["Title"] = "GM";
+}
+
+<h2>GM commands</h2>
+
+@if (!string.IsNullOrEmpty(Model.StatusMessage))
+{
+    <p class="muted">@Model.StatusMessage</p>
+}
+
+<form method="post" asp-page-handler="Broadcast" class="card" style="max-width:600px">
+    <label for="message">Broadcast message</label><br />
+    <input type="text" id="message" name="message" required maxlength="200" style="width:100%; padding:8px; margin:8px 0; background:#0f0f0f; color:#eee; border:1px solid #333; border-radius:4px" />
+    <button type="submit">Send</button>
+</form>
+
+<form method="post" asp-page-handler="GrantGold" class="card" style="max-width:600px; margin-top:16px">
+    <label for="characterName">Grant gold to character</label><br />
+    <input type="text" id="characterName" name="characterName" required maxlength="32" placeholder="Character name" style="width:60%; padding:8px; margin:8px 8px 8px 0; background:#0f0f0f; color:#eee; border:1px solid #333; border-radius:4px" />
+    <input type="number" name="amount" min="1" max="2000000000" required placeholder="amount" style="width:25%; padding:8px; background:#0f0f0f; color:#eee; border:1px solid #333; border-radius:4px" />
+    <br />
+    <button type="submit">Grant</button>
+</form>
+
+<p class="muted" style="margin-top:24px">
+    Broadcasts and kicks need to be relayed through the ISC channel to the World servers.
+    The handler here records the intent and will be wired in once the ISC outbound side ships GM packets.
+</p>
