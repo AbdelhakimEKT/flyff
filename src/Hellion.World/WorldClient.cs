@@ -1,5 +1,4 @@
-﻿using Ether.Network;
-using Hellion.Core.Database;
+﻿using Hellion.Core.Database;
 using Hellion.Core.IO;
 using System;
 using System.Collections.Generic;
@@ -7,7 +6,6 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
-using Ether.Network.Packets;
 using Hellion.Core;
 using Hellion.Core.Data.Headers;
 using Hellion.Core.Network;

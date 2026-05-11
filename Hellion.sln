@@ -1,7 +1,7 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{4A762668-BB7D-4D7F-983C-921CD39DE66C}"
 EndProject
@@ -12,13 +12,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		global.json = global.json
 		LICENSE = LICENSE
 		README.md = README.md
+		roadmap.md = roadmap.md
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Hellion.Core", "src\Hellion.Core\Hellion.Core.xproj", "{9291EFE5-7E3A-476F-B1F3-F7CB5CBC6DF1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hellion.Core", "src\Hellion.Core\Hellion.Core.csproj", "{9291EFE5-7E3A-476F-B1F3-F7CB5CBC6DF1}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Hellion.ISC", "src\Hellion.ISC\Hellion.ISC.xproj", "{5C2B8936-CE01-406F-AD00-EA64096A40F0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hellion.ISC", "src\Hellion.ISC\Hellion.ISC.csproj", "{5C2B8936-CE01-406F-AD00-EA64096A40F0}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Hellion.Login", "src\Hellion.Login\Hellion.Login.xproj", "{645132CF-3F18-4DAD-9FC5-77CDD31B3A72}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hellion.Login", "src\Hellion.Login\Hellion.Login.csproj", "{645132CF-3F18-4DAD-9FC5-77CDD31B3A72}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "doc", "doc", "{B4F7502A-8F35-4D1D-A70B-7F4639CF957A}"
 EndProject
@@ -31,9 +32,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "packets", "packets", "{8CF3
 		doc\packets\World.md = doc\packets\World.md
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Hellion.Cluster", "src\Hellion.Cluster\Hellion.Cluster.xproj", "{48662B07-F1A0-455E-8F98-B946A2E8CB70}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hellion.Cluster", "src\Hellion.Cluster\Hellion.Cluster.csproj", "{48662B07-F1A0-455E-8F98-B946A2E8CB70}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Hellion.World", "src\Hellion.World\Hellion.World.xproj", "{9FD27F2B-8F25-4A1A-8F94-E374943C94A1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hellion.World", "src\Hellion.World\Hellion.World.csproj", "{9FD27F2B-8F25-4A1A-8F94-E374943C94A1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

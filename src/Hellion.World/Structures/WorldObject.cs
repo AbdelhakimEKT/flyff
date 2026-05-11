@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using EHelper = Ether.Network.Helpers;
+using EHelper = Hellion.Core.Network.Helpers;
 
 namespace Hellion.World.Structures
 {

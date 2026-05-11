@@ -1,5 +1,5 @@
-﻿using Ether.Network.Packets;
-using Hellion.Core.Data.Headers;
+﻿using Hellion.Core.Data.Headers;
+using Hellion.Core.Network;
 using Hellion.Core.IO;
 using Hellion.Core.ISC.Structures;
 

@@ -1,6 +1,4 @@
-﻿using Ether.Network;
-using Ether.Network.Packets;
-using Hellion.Core.Configuration;
+﻿using Hellion.Core.Configuration;
 using Hellion.Core.Database;
 using Hellion.Core.IO;
 using Hellion.Core.Network;
