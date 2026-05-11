@@ -48,13 +48,14 @@ namespace Hellion.World
 
         /// <summary>
         /// Called by <c>JoinHandler</c> once the account + character have been
-        /// loaded asynchronously; finalises the in-world state and triggers the
-        /// spawn packet that puts the player on the map.
+        /// loaded asynchronously; finalises the in-world state, registers the
+        /// player in the spatial index, and triggers the spawn packet.
         /// </summary>
         internal void CompleteJoin(DbUser account, DbCharacter character)
         {
             this.currentUser = account;
             this.Player = new Player(character);
+            this.Server.Maps.Get(this.Player.MapId).Track(this, oldPosition: null, this.Player.Position);
             this.SendPlayerSpawn();
         }
 

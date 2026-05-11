@@ -3,6 +3,10 @@ using Hellion.Core.Database;
 using Hellion.Core.IO;
 using Hellion.Core.Network;
 using Hellion.Core.Repositories;
+using Hellion.World.Game.Combat;
+using Hellion.World.Game.Inventory;
+using Hellion.World.Game.Resources;
+using Hellion.World.Game.Zones;
 using Hellion.World.Handlers;
 using Hellion.World.Packets;
 using Microsoft.EntityFrameworkCore;
@@ -34,6 +38,12 @@ namespace Hellion.World
                 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
                 builder.Services.AddScoped<ICharacterRepository, CharacterRepository>();
                 builder.Services.AddScoped<IItemRepository, ItemRepository>();
+
+                builder.Services.AddSingleton<GameResources>();
+                builder.Services.AddSingleton<IGameResources>(sp => sp.GetRequiredService<GameResources>());
+                builder.Services.AddSingleton<WorldMapManager>();
+                builder.Services.AddSingleton<CombatService>();
+                builder.Services.AddScoped<InventoryService>();
 
                 builder.Services.AddSingleton<PacketRouter>();
                 builder.Services.AddScoped<IPacketHandler<JoinPacket>, JoinHandler>();

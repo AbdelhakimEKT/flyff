@@ -1,11 +1,15 @@
-﻿using Hellion.Core.Configuration;
+﻿using Hellion.Core;
+using Hellion.Core.Configuration;
 using Hellion.Core.Database;
 using Hellion.Core.IO;
 using Hellion.Core.Network;
+using Hellion.World.Game.Resources;
+using Hellion.World.Game.Zones;
 using Hellion.World.ISC;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -49,17 +53,31 @@ namespace Hellion.World
         public PacketRouter PacketRouter { get; }
 
         /// <summary>
+        /// Gets the in-memory game resources (mobs, items, maps).
+        /// </summary>
+        public GameResources Resources { get; }
+
+        /// <summary>
+        /// Gets the spatial index of every active map (100-unit chunks).
+        /// </summary>
+        public WorldMapManager Maps { get; }
+
+        /// <summary>
         /// Creates a new WorldServer instance.
         /// </summary>
         public WorldServer(
             IOptions<WorldConfiguration> worldOptions,
             IOptions<DatabaseConfiguration> dbOptions,
-            PacketRouter packetRouter)
+            PacketRouter packetRouter,
+            GameResources resources,
+            WorldMapManager maps)
             : base()
         {
             this.WorldConfiguration = worldOptions.Value;
             this.DatabaseConfiguration = dbOptions.Value;
             this.PacketRouter = packetRouter;
+            this.Resources = resources;
+            this.Maps = maps;
             try { Console.Title = "Hellion WorldServer"; } catch { }
             Log.Info("Starting WorldServer...");
         }
@@ -126,6 +144,10 @@ namespace Hellion.World
         /// <param name="client">Client</param>
         protected override void OnClientDisconnected(NetConnection client)
         {
+            if (client is WorldClient { Player: { } player } worldClient)
+            {
+                this.Maps.Get(player.MapId).Remove(worldClient, player.Position);
+            }
             Log.Info("Client with id {0} disconnected.", client.Id);
         }
 

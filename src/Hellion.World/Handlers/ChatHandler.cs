@@ -9,7 +9,7 @@ namespace Hellion.World.Handlers
 {
     /// <summary>
     /// Handles in-world chat messages: logs them and broadcasts to every
-    /// player sharing the same map.
+    /// player standing in the 3x3 chunk neighbourhood of the sender.
     /// </summary>
     public class ChatHandler : IPacketHandler<ChatPacket>
     {
@@ -25,9 +25,9 @@ namespace Hellion.World.Handlers
             broadcast.StartNewMergedPacket(worldClient.Player.ObjectId, WorldHeaders.Outgoing.MoverChat);
             broadcast.Write(message);
 
-            foreach (var other in worldClient.Server.Clients)
+            var worldMap = worldClient.Server.Maps.Get(worldClient.Player.MapId);
+            foreach (var other in worldMap.Neighbours(worldClient.Player.Position))
             {
-                if (other.Player == null || other.Player.MapId != worldClient.Player.MapId) continue;
                 other.Send(broadcast);
             }
 

@@ -37,8 +37,6 @@ namespace Hellion.World.Structures
         
         public int Intelligence { get; set; }
 
-        public int Hp { get; set; }
-
         public int Mp { get; set; }
 
         public int Fp { get; set; }
@@ -89,8 +87,10 @@ namespace Hellion.World.Structures
             this.HairColor = dbCharacter.HairColor;
             this.FaceId = dbCharacter.FaceId;
             this.BankCode = dbCharacter.BankCode;
+            this.MaxHp = System.Math.Max(dbCharacter.Hp, 1);
             this.MapId = dbCharacter.MapId;
             this.Position = new Vector3(dbCharacter.PosX, dbCharacter.PosY, dbCharacter.PosZ);
+            this.SpawnPoint = new WorldPosition(dbCharacter.MapId, dbCharacter.PosX, dbCharacter.PosY, dbCharacter.PosZ);
 
             // Initialize inventory, quests, guild, friends, skills etc...
         }

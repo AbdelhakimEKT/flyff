@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Hellion.Core.Data;
+using Hellion.Core.Structures;
 
 namespace Hellion.World.Structures
 {
@@ -18,9 +16,25 @@ namespace Hellion.World.Structures
 
         public bool IsReseting { get; set; }
 
+        /// <summary>Units of world space the mover can travel per second.</summary>
         public float Speed { get; set; }
-        
+
         public int Level { get; }
+
+        public float Angle { get; set; }
+
+        public int MaxHp { get; set; } = 1;
+
+        public int AttackDamage { get; set; } = 1;
+
+        public int Defense { get; set; }
+
+        /// <summary>Set by the move handler each time the mover's position is updated.</summary>
+        public DateTime LastMoveAt { get; set; } = DateTime.UtcNow;
+
+        public WorldPosition? SpawnPoint { get; set; }
+
+        public int Hp { get; set; } = 1;
 
         public override WorldObjectType Type
         {
@@ -30,7 +44,7 @@ namespace Hellion.World.Structures
         public Mover(int modelId)
             : base(modelId)
         {
-            this.Speed = 0.1f;
+            this.Speed = 12.0f;
             this.Level = 1;
         }
     }
