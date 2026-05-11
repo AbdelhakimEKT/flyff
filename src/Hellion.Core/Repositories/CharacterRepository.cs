@@ -1,8 +1,7 @@
-﻿using System;
-using System.Linq.Expressions;
+﻿using Hellion.Core.Database;
 using Microsoft.EntityFrameworkCore;
 
-namespace Hellion.Core.Database.Repository
+namespace Hellion.Core.Repositories
 {
     public class CharacterRepository : RepositoryBase<DbCharacter>
     {

@@ -1,15 +1,13 @@
-﻿using Ether.Network;
-using Ether.Network.Packets;
-using Hellion.Cluster.Client;
+﻿using Hellion.Cluster.Client;
 using Hellion.Cluster.ISC;
 using Hellion.Core.Configuration;
 using Hellion.Core.Database;
 using Hellion.Core.IO;
 using Hellion.Core.ISC.Structures;
 using Hellion.Core.Network;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading;
 
 namespace Hellion.Cluster
@@ -19,39 +17,37 @@ namespace Hellion.Cluster
     /// </summary>
     public class ClusterServer : NetServer<ClusterClient>
     {
-        private const string ClusterConfigurationFile = "config/cluster.json";
-        private const string DatabaseConfigurationFile = "config/database.json";
-        
-        private DatabaseContext dbContext = null;
+        private DatabaseContext? dbContext;
 
-        private InterConnector connector;
-        private Thread iscThread;
+        private InterConnector? connector;
+        private Thread? iscThread;
 
         /// <summary>
         /// Gets the cluster server configuration.
         /// </summary>
-        public ClusterConfiguration ClusterConfiguration { get; private set; }
+        public ClusterConfiguration ClusterConfiguration { get; }
 
         /// <summary>
         /// Gets the database configuration.
         /// </summary>
-        public DatabaseConfiguration DatabaseConfiguration { get; private set; }
+        public DatabaseConfiguration DatabaseConfiguration { get; }
 
         /// <summary>
         /// Gets the list of the conencted world servers.
         /// </summary>
-        public ICollection<WorldServerInfo> ConnectedWorldServers { get; private set; }
+        public ICollection<WorldServerInfo> ConnectedWorldServers { get; }
 
         /// <summary>
         /// Creates a new ClusterServer instance.
         /// </summary>
-        public ClusterServer()
+        public ClusterServer(IOptions<ClusterConfiguration> clusterOptions, IOptions<DatabaseConfiguration> dbOptions)
             : base()
         {
-            Console.Title = "Hellion ClusterServer";
-            Log.Info("Starting ClusterServer...");
-
+            this.ClusterConfiguration = clusterOptions.Value;
+            this.DatabaseConfiguration = dbOptions.Value;
             this.ConnectedWorldServers = new List<WorldServerInfo>();
+            try { Console.Title = "Hellion ClusterServer"; } catch { }
+            Log.Info("Starting ClusterServer...");
         }
 
         /// <summary>
@@ -79,11 +75,13 @@ namespace Hellion.Cluster
         /// </summary>
         protected override void Initialize()
         {
-            this.LoadConfiguration();
+            Log.Info("Loading configuration...");
+            this.Configuration.Ip = this.ClusterConfiguration.Ip;
+            this.Configuration.Port = this.ClusterConfiguration.Port;
+            Log.Done("Configuration loaded!");
+
             this.ConnectToDatabase();
             this.ConnectToISC();
-
-            Console.WriteLine();
         }
 
         /// <summary>
@@ -116,30 +114,6 @@ namespace Hellion.Cluster
         {
             return FFPacket.SplitPackets(buffer);
         }
-
-        /// <summary>
-        /// Load the ClusterServer configuration.
-        /// </summary>
-        private void LoadConfiguration()
-        {
-            Log.Info("Loading configuration...");
-
-            if (File.Exists(ClusterConfigurationFile) == false)
-                ConfigurationManager.Save(new LoginConfiguration(), ClusterConfigurationFile);
-
-            this.ClusterConfiguration = ConfigurationManager.Load<ClusterConfiguration>(ClusterConfigurationFile);
-
-            this.Configuration.Ip = this.ClusterConfiguration.Ip;
-            this.Configuration.Port = this.ClusterConfiguration.Port;
-
-            if (File.Exists(DatabaseConfigurationFile) == false)
-                ConfigurationManager.Save(new DatabaseConfiguration(), DatabaseConfigurationFile);
-
-            this.DatabaseConfiguration = ConfigurationManager.Load<DatabaseConfiguration>(DatabaseConfigurationFile);
-
-            Log.Done("Configuration loaded!");
-        }
-
 
         /// <summary>
         /// Connect to the database.

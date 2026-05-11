@@ -1,16 +1,14 @@
-﻿using Ether.Network;
-using Ether.Network.Packets;
-using Hellion.Core.Configuration;
+﻿using Hellion.Core.Configuration;
 using Hellion.Core.Database;
-using Hellion.Core.Database.Repository;
+using Hellion.Core.Repositories;
 using Hellion.Core.IO;
 using Hellion.Core.ISC.Structures;
 using Hellion.Core.Network;
 using Hellion.Login.Client;
 using Hellion.Login.ISC;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading;
 
 namespace Hellion.Login
@@ -20,9 +18,6 @@ namespace Hellion.Login
     /// </summary>
     public sealed class LoginServer : NetServer<LoginClient>
     {
-        private const string LoginConfigurationFile = "config/login.json";
-        private const string DatabaseConfigurationFile = "config/database.json";
-
         /// <summary>
         /// Gets the user repository.
         /// </summary>
@@ -31,12 +26,12 @@ namespace Hellion.Login
             get
             {
                 if (userRepository == null)
-                    userRepository = new UserRepository(dbContext);
+                    userRepository = new UserRepository(dbContext!);
                 return userRepository;
             }
         }
-        private static IRepository<DbUser> userRepository;
-        private static DatabaseContext dbContext = null;
+        private static IRepository<DbUser>? userRepository;
+        private static DatabaseContext? dbContext;
 
         /// <summary>
         /// Gets the cluster servers list.
@@ -54,26 +49,28 @@ namespace Hellion.Login
         private static ICollection<ClusterServerInfo> clusters = new List<ClusterServerInfo>();
         private static object syncClusters = new object();
 
-        private InterConnector connector;
-        private Thread iscThread;
+        private InterConnector? connector;
+        private Thread? iscThread;
 
         /// <summary>
         /// Gets the login server configuration.
         /// </summary>
-        public LoginConfiguration LoginConfiguration { get; private set; }
+        public LoginConfiguration LoginConfiguration { get; }
 
         /// <summary>
         /// Gets the database configuration.
         /// </summary>
-        public DatabaseConfiguration DatabaseConfiguration { get; private set; }
+        public DatabaseConfiguration DatabaseConfiguration { get; }
 
         /// <summary>
         /// Creates a new LoginServer instance.
         /// </summary>
-        public LoginServer()
+        public LoginServer(IOptions<LoginConfiguration> loginOptions, IOptions<DatabaseConfiguration> dbOptions)
             : base()
         {
-            Console.Title = "Hellion LoginServer";
+            this.LoginConfiguration = loginOptions.Value;
+            this.DatabaseConfiguration = dbOptions.Value;
+            try { Console.Title = "Hellion LoginServer"; } catch { }
             Log.Info("Starting LoginServer...");
         }
 
@@ -95,11 +92,13 @@ namespace Hellion.Login
         /// </summary>
         protected override void Initialize()
         {
-            this.LoadConfiguration();
+            Log.Info("Loading configuration...");
+            this.Configuration.Ip = this.LoginConfiguration.Ip;
+            this.Configuration.Port = this.LoginConfiguration.Port;
+            Log.Done("Configuration loaded!");
+
             this.ConnectToDatabase();
             this.ConnectToISC();
-
-            Console.WriteLine();
         }
 
         /// <summary>
@@ -138,29 +137,6 @@ namespace Hellion.Login
         /// </summary>
         public override void DisposeServer()
         {
-        }
-
-        /// <summary>
-        /// Load the LoginServer configuration.
-        /// </summary>
-        private void LoadConfiguration()
-        {
-            Log.Info("Loading configuration...");
-
-            if (File.Exists(LoginConfigurationFile) == false)
-                ConfigurationManager.Save(new LoginConfiguration(), LoginConfigurationFile);
-
-            this.LoginConfiguration = ConfigurationManager.Load<LoginConfiguration>(LoginConfigurationFile);
-
-            this.Configuration.Ip = this.LoginConfiguration.Ip;
-            this.Configuration.Port = this.LoginConfiguration.Port;
-
-            if (File.Exists(DatabaseConfigurationFile) == false)
-                ConfigurationManager.Save(new DatabaseConfiguration(), DatabaseConfigurationFile);
-
-            this.DatabaseConfiguration = ConfigurationManager.Load<DatabaseConfiguration>(DatabaseConfigurationFile);
-
-            Log.Done("Configuration loaded!");
         }
 
         /// <summary>
