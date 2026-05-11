@@ -1,4 +1,5 @@
-﻿using Hellion.Core.Data.Headers;
+﻿using Hellion.Core.Cryptography;
+using Hellion.Core.Data.Headers;
 using Hellion.Core.IO;
 using Hellion.Core.Network;
 using System.Linq;
@@ -42,7 +43,7 @@ namespace Hellion.Login.Client
                     return;
                 }
 
-                if (password.ToLower() != user.Password.ToLower())
+                if (!PasswordHasher.Verify(password, user.Password))
                 {
                     Log.Info($"User '{username}' logged in with bad credentials. (Bad password)");
                     this.SendLoginError(LoginHeaders.LoginErrors.WrongPassword);

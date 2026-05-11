@@ -44,13 +44,22 @@ namespace Hellion.World
         public DatabaseConfiguration DatabaseConfiguration { get; }
 
         /// <summary>
+        /// Gets the packet router used to dispatch inbound packets to typed handlers.
+        /// </summary>
+        public PacketRouter PacketRouter { get; }
+
+        /// <summary>
         /// Creates a new WorldServer instance.
         /// </summary>
-        public WorldServer(IOptions<WorldConfiguration> worldOptions, IOptions<DatabaseConfiguration> dbOptions)
+        public WorldServer(
+            IOptions<WorldConfiguration> worldOptions,
+            IOptions<DatabaseConfiguration> dbOptions,
+            PacketRouter packetRouter)
             : base()
         {
             this.WorldConfiguration = worldOptions.Value;
             this.DatabaseConfiguration = dbOptions.Value;
+            this.PacketRouter = packetRouter;
             try { Console.Title = "Hellion WorldServer"; } catch { }
             Log.Info("Starting WorldServer...");
         }
@@ -85,9 +94,18 @@ namespace Hellion.World
             this.Configuration.Port = this.WorldConfiguration.Port;
             Log.Done("Configuration loaded!");
 
+            this.RegisterPacketHandlers();
             this.ConnectToDatabase();
             this.LoadData();
             this.ConnectToISC();
+        }
+
+        private void RegisterPacketHandlers()
+        {
+            this.PacketRouter.RegisterHandler<Packets.JoinPacket>();
+            this.PacketRouter.RegisterHandler<Packets.MovePacket>();
+            this.PacketRouter.RegisterHandler<Packets.ChatPacket>();
+            Log.Done("Packet router: 3 handlers registered (Join, Move, Chat).");
         }
 
         /// <summary>

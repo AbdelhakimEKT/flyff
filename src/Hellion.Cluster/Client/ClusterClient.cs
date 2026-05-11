@@ -1,4 +1,5 @@
 ﻿using Hellion.Core;
+using Hellion.Core.Cryptography;
 using Hellion.Core.Data.Headers;
 using Hellion.Core.Database;
 using Hellion.Core.Network;
@@ -79,15 +80,15 @@ namespace Hellion.Cluster.Client
         /// <param name="username">Account username</param>
         /// <param name="password">Account password</param>
         /// <returns></returns>
-        private DbUser GetUserAccount(string username, string password)
+        private DbUser? GetUserAccount(string username, string password)
         {
-            var accounts = from x in DatabaseService.Users.GetAll()
+            var account = (from x in DatabaseService.Users.GetAll()
                            where x.Username.ToLower() == username.ToLower()
-                           where x.Password.ToLower() == password.ToLower()
                            where x.Authority != 0
-                           select x;
+                           select x).FirstOrDefault();
 
-            return accounts.FirstOrDefault();
+            if (account == null) return null;
+            return PasswordHasher.Verify(password, account.Password) ? account : null;
         }
 
         /// <summary>

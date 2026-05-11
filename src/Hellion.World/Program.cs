@@ -1,7 +1,10 @@
 using Hellion.Core.Configuration;
 using Hellion.Core.Database;
 using Hellion.Core.IO;
+using Hellion.Core.Network;
 using Hellion.Core.Repositories;
+using Hellion.World.Handlers;
+using Hellion.World.Packets;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -31,6 +34,11 @@ namespace Hellion.World
                 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
                 builder.Services.AddScoped<ICharacterRepository, CharacterRepository>();
                 builder.Services.AddScoped<IItemRepository, ItemRepository>();
+
+                builder.Services.AddSingleton<PacketRouter>();
+                builder.Services.AddScoped<IPacketHandler<JoinPacket>, JoinHandler>();
+                builder.Services.AddScoped<IPacketHandler<MovePacket>, MoveHandler>();
+                builder.Services.AddScoped<IPacketHandler<ChatPacket>, ChatHandler>();
 
                 builder.Services.AddSingleton<WorldServer>();
 
