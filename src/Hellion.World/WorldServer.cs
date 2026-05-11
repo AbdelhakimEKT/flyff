@@ -3,9 +3,9 @@ using Hellion.Core.Database;
 using Hellion.Core.IO;
 using Hellion.Core.Network;
 using Hellion.World.ISC;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,13 +14,10 @@ namespace Hellion.World
 {
     public partial class WorldServer : NetServer<WorldClient>
     {
-        private const string WorldConfigurationFile = "config/world.json";
-        private const string DatabaseConfigurationFile = "config/database.json";
-
         /// <summary>
         /// Gets the Database context.
         /// </summary>
-        public static DatabaseContext DbContext
+        public static DatabaseContext? DbContext
         {
             get
             {
@@ -31,28 +28,30 @@ namespace Hellion.World
             }
         }
         private static object syncDatabase = new object();
-        private static DatabaseContext dbContext = null;
+        private static DatabaseContext? dbContext;
 
-        private InterConnector connector;
-        private Thread iscThread;
+        private InterConnector? connector;
+        private Thread? iscThread;
 
         /// <summary>
         /// Gets the world server configuration.
         /// </summary>
-        public WorldConfiguration WorldConfiguration { get; private set; }
+        public WorldConfiguration WorldConfiguration { get; }
 
         /// <summary>
         /// Gets the database configuration.
         /// </summary>
-        public DatabaseConfiguration DatabaseConfiguration { get; private set; }
+        public DatabaseConfiguration DatabaseConfiguration { get; }
 
         /// <summary>
         /// Creates a new WorldServer instance.
         /// </summary>
-        public WorldServer()
+        public WorldServer(IOptions<WorldConfiguration> worldOptions, IOptions<DatabaseConfiguration> dbOptions)
             : base()
         {
-            Console.Title = "Hellion WorldServer";
+            this.WorldConfiguration = worldOptions.Value;
+            this.DatabaseConfiguration = dbOptions.Value;
+            try { Console.Title = "Hellion WorldServer"; } catch { }
             Log.Info("Starting WorldServer...");
         }
 
@@ -81,12 +80,14 @@ namespace Hellion.World
         /// </summary>
         protected override void Initialize()
         {
-            this.LoadConfiguration();
+            Log.Info("Loading configuration...");
+            this.Configuration.Ip = this.WorldConfiguration.Ip;
+            this.Configuration.Port = this.WorldConfiguration.Port;
+            Log.Done("Configuration loaded!");
+
             this.ConnectToDatabase();
             this.LoadData();
             this.ConnectToISC();
-
-            Console.WriteLine();
         }
 
         /// <summary>
@@ -119,30 +120,6 @@ namespace Hellion.World
         {
             return FFPacket.SplitPackets(buffer);
         }
-
-        /// <summary>
-        /// Load the WorldServer configuration.
-        /// </summary>
-        private void LoadConfiguration()
-        {
-            Log.Info("Loading configuration...");
-
-            if (File.Exists(WorldConfigurationFile) == false)
-                ConfigurationManager.Save(new LoginConfiguration(), WorldConfigurationFile);
-
-            this.WorldConfiguration = ConfigurationManager.Load<WorldConfiguration>(WorldConfigurationFile);
-
-            this.Configuration.Ip = this.WorldConfiguration.Ip;
-            this.Configuration.Port = this.WorldConfiguration.Port;
-
-            if (File.Exists(DatabaseConfigurationFile) == false)
-                ConfigurationManager.Save(new DatabaseConfiguration(), DatabaseConfigurationFile);
-
-            this.DatabaseConfiguration = ConfigurationManager.Load<DatabaseConfiguration>(DatabaseConfigurationFile);
-
-            Log.Done("Configuration loaded!");
-        }
-
 
         /// <summary>
         /// Connect to the database.

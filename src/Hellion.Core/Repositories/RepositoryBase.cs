@@ -3,7 +3,7 @@ using System;
 using System.Linq;
 using System.Linq.Expressions;
 
-namespace Hellion.Core.Database.Repository
+namespace Hellion.Core.Repositories
 {
     public class RepositoryBase<T> : IRepository<T> where T : class
     {

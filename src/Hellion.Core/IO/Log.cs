@@ -1,72 +1,83 @@
-﻿using System;
+using System;
 using System.Text;
+using Serilog;
+using Serilog.Core;
+using Serilog.Events;
 
 namespace Hellion.Core.IO
 {
-    internal enum LogType
-    {
-        Info,
-        Done,
-        Warning,
-        Error,
-        Debug
-    }
-
     public static class Log
     {
-        private static object syncLog = new object();
+        private static ILogger _logger = Serilog.Log.Logger;
+        private static bool _initialized;
 
         static Log()
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
         }
 
-        public static void Info(string format, params object[] args)
+        /// <summary>
+        /// Initialize the Serilog logger with the given server name.
+        /// The chosen format is: <c>HH:mm:ss.fff | LEVEL | Server | message</c>.
+        /// </summary>
+        public static void Initialize(string serverName, string? logFilePath = null)
         {
-            lock (syncLog)
-                WriteConsole(LogType.Info, string.Format(format, args));
+            var template = "{Timestamp:HH:mm:ss.fff} | {Level:u3} | {Server} | {Message:lj}{NewLine}{Exception}";
+
+            var config = new LoggerConfiguration()
+                .MinimumLevel.Verbose()
+                .Enrich.WithProperty("Server", serverName)
+                .WriteTo.Console(outputTemplate: template);
+
+            if (!string.IsNullOrWhiteSpace(logFilePath))
+            {
+                config = config.WriteTo.File(logFilePath, rollingInterval: RollingInterval.Day, outputTemplate: template);
+            }
+
+            Serilog.Log.Logger = config.CreateLogger();
+            _logger = Serilog.Log.Logger;
+            _initialized = true;
         }
 
-        public static void Done(string format, params object[] args)
-        {
-            lock (syncLog)
-                WriteConsole(LogType.Done, string.Format(format, args));
-        }
+        public static void Info(string format, params object[] args) =>
+            Write(LogEventLevel.Information, format, args);
 
-        public static void Warning(string format, params object[] args)
-        {
-            lock (syncLog)
-                WriteConsole(LogType.Warning, string.Format(format, args));
-        }
+        public static void Done(string format, params object[] args) =>
+            Write(LogEventLevel.Information, format, args);
 
-        public static void Error(string format, params object[] args)
-        {
-            lock (syncLog)
-                WriteConsole(LogType.Error, string.Format(format, args));
-        }
+        public static void Warning(string format, params object[] args) =>
+            Write(LogEventLevel.Warning, format, args);
+
+        public static void Error(string format, params object[] args) =>
+            Write(LogEventLevel.Error, format, args);
 
         public static void Debug(string format, params object[] args)
         {
 #if DEBUG
-            lock (syncLog)
-                WriteConsole(LogType.Debug, string.Format(format, args));
+            Write(LogEventLevel.Debug, format, args);
 #endif
         }
 
-        private static void WriteConsole(LogType logType, string text)
+        public static void CloseAndFlush()
         {
-            switch (logType)
+            if (_initialized)
             {
-                case LogType.Info: Console.ForegroundColor = ConsoleColor.Green; break;
-                case LogType.Done: Console.ForegroundColor = ConsoleColor.DarkCyan; break;
-                case LogType.Warning: Console.ForegroundColor = ConsoleColor.Yellow; break;
-                case LogType.Error: Console.ForegroundColor = ConsoleColor.Red; break;
-                case LogType.Debug: Console.ForegroundColor = ConsoleColor.Blue; break;
+                Serilog.Log.CloseAndFlush();
             }
+        }
 
-            Console.Write("[{0}]: ", logType.ToString());
-            Console.ResetColor();
-            Console.WriteLine(text);
+        private static void Write(LogEventLevel level, string format, params object[] args)
+        {
+            string message;
+            try
+            {
+                message = args.Length == 0 ? format : string.Format(format, args);
+            }
+            catch (FormatException)
+            {
+                message = format;
+            }
+            _logger.Write(level, "{Text}", message);
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using Hellion.Core.Database.Repository;
+﻿using Hellion.Core.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System;
 

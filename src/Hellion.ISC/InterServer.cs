@@ -3,9 +3,9 @@ using Hellion.Core.Network;
 using Hellion.Core.Data.Headers;
 using Hellion.Core.IO;
 using Hellion.Core.ISC.Structures;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 
 namespace Hellion.ISC
@@ -13,22 +13,18 @@ namespace Hellion.ISC
     public sealed class InterServer : NetServer<InterClient>
     {
         /// <summary>
-        /// ISC Configuration file path.
-        /// </summary>
-        private const string IscConfigurationFile = "config/isc.json";
-
-        /// <summary>
         /// Gets the ISC configuration.
         /// </summary>
-        public ISCConfiguration IscConfiguration { get; private set; }
+        public ISCConfiguration IscConfiguration { get; }
 
         /// <summary>
         /// Creates a new InterServer instance.
         /// </summary>
-        public InterServer()
+        public InterServer(IOptions<ISCConfiguration> iscOptions)
             : base()
         {
-            Console.Title = "Hellion ISC";
+            this.IscConfiguration = iscOptions.Value;
+            try { Console.Title = "Hellion ISC"; } catch { }
         }
 
         /// <summary>
@@ -49,7 +45,10 @@ namespace Hellion.ISC
         /// </summary>
         protected override void Initialize()
         {
-            this.LoadConfiguration();
+            Log.Info("Loading configuration...");
+            this.Configuration.Ip = this.IscConfiguration.Ip;
+            this.Configuration.Port = this.IscConfiguration.Port;
+            Log.Done("Configuration loaded!");
         }
 
         /// <summary>
@@ -83,24 +82,6 @@ namespace Hellion.ISC
         /// </summary>
         public override void DisposeServer()
         {
-        }
-
-        /// <summary>
-        /// Load the server configuration.
-        /// </summary>
-        private void LoadConfiguration()
-        {
-            Log.Info("Loading configuration...");
-
-            if (File.Exists(IscConfigurationFile) == false)
-                ConfigurationManager.Save(new ISCConfiguration(), IscConfigurationFile);
-
-            this.IscConfiguration = ConfigurationManager.Load<ISCConfiguration>(IscConfigurationFile);
-
-            this.Configuration.Ip = this.IscConfiguration.Ip;
-            this.Configuration.Port = this.IscConfiguration.Port;
-
-            Log.Done("Configuration loaded!");
         }
 
         /// <summary>
