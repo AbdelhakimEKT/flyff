@@ -1,11 +1,11 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Hellion.Core.Database
 {
     [Table("characters")]
-    public class DbCharacter
+    public class DbCharacter : BaseEntity
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -15,8 +15,10 @@ namespace Hellion.Core.Database
         [Column("accountId")]
         public int AccountId { get; set; }
 
+        [Required]
+        [MaxLength(32)]
         [Column("name")]
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         [Column("gender")]
         public byte Gender { get; set; }
@@ -84,11 +86,6 @@ namespace Hellion.Core.Database
         [Column("bankCode")]
         public int BankCode { get; set; }
 
-        public virtual ICollection<DbItem> Items { get; set; }
-
-        public DbCharacter()
-        {
-            this.Items = new HashSet<DbItem>();
-        }
+        public virtual ICollection<DbItem> Items { get; set; } = new HashSet<DbItem>();
     }
 }
